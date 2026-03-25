@@ -1,0 +1,15 @@
+:root {
+  background-color: #ffffff;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #ffffff;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  background-color: #ffffff;
+  min-height: 100vh;
+}
