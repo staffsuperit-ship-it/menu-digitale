@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import { Wine, Check, Search, X, Mail, Phone, MessageCircle, Star } from 'lucide-react';
+import { Wine, Check, Search, X, Mail, Phone, MessageCircle, Star, Info } from 'lucide-react';
 
 function PublicMenu() {
   const { slug } = useParams();
@@ -59,6 +59,7 @@ function PublicMenu() {
     setViniGruppati(gV); setPiattiGruppati(gP);
     const categorie = Object.keys(gV);
     if (categorie.length > 0) setSubTabVino(categorie[0]);
+    if (categorie.length === 0 && Object.keys(gP).length > 0) setTab('piatti');
     setLoading(false);
   };
 
@@ -75,7 +76,7 @@ function PublicMenu() {
     setTimeout(() => viniRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
   };
 
-  if (loading) return <div style={{textAlign:'center', padding:'100px', color:'#992235'}}>WineLink sta preparando la tavola...</div>;
+  if (loading) return <div style={{textAlign:'center', padding:'100px', color: '#992235'}}>WineLink...</div>;
 
   const pColor = locale.colore_primario || '#992235';
   const sColor = locale.colore_secondario || '#EEB336';
@@ -83,19 +84,27 @@ function PublicMenu() {
   return (
     <div style={{ background: '#fff', minHeight: '100vh', fontFamily: '"Playfair Display", serif', color: '#333' }}>
       
+      {/* HEADER */}
       <header style={{ textAlign: 'center', padding: '50px 20px 30px' }}>
         {locale.logo_url && <img src={locale.logo_url} alt="Logo" style={{ maxHeight: '110px', marginBottom: '20px', objectFit: 'contain' }} />}
-        <h1 style={{ margin: 0, fontSize: '2.2rem', textTransform: 'uppercase', letterSpacing: '2px', color: pColor }}>{locale.nome}</h1>
+        <h1 style={{ margin: 0, fontSize: '2rem', textTransform: 'uppercase', color: pColor }}>{locale.nome}</h1>
         <div style={{ width: '40px', height: '2px', background: sColor, margin: '15px auto' }}></div>
       </header>
 
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '30px' }}>
-        <button onClick={() => setTab('vini')} style={{ border: 'none', padding: '12px 25px', borderRadius: '5px', background: tab === 'vini' ? pColor : '#f2f2f2', color: tab === 'vini' ? 'white' : '#666', fontWeight:'bold', cursor:'pointer' }}>CARTA VINI</button>
+      {/* SWITCH PRINCIPALE */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '15px' }}>
+        <button onClick={() => setTab('vini')} style={{ border: 'none', padding: '10px 20px', borderRadius: '5px', background: tab === 'vini' ? pColor : '#f2f2f2', color: tab === 'vini' ? 'white' : '#666', fontWeight:'bold', cursor:'pointer' }}>CARTA VINI</button>
         {Object.keys(piattiGruppati).length > 0 && (
-            <button onClick={() => setTab('piatti')} style={{ border: 'none', padding: '12px 25px', borderRadius: '5px', background: tab === 'piatti' ? pColor : '#f2f2f2', color: tab === 'piatti' ? 'white' : '#666', fontWeight:'bold', cursor:'pointer' }}>MENÙ PIATTI</button>
+            <button onClick={() => setTab('piatti')} style={{ border: 'none', padding: '10px 20px', borderRadius: '5px', background: tab === 'piatti' ? pColor : '#f2f2f2', color: tab === 'piatti' ? 'white' : '#666', fontWeight:'bold', cursor:'pointer' }}>MENÙ PIATTI</button>
         )}
       </div>
 
+      {/* SELETTORE TRADUZIONE GOOGLE */}
+      <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+        <div id="google_translate_element" style={{ display: 'inline-block' }}></div>
+      </div>
+
+      {/* RICERCA & SOTTO-TABS */}
       {tab === 'vini' && (
         <div style={{ maxWidth: '500px', margin: '0 auto 20px', padding: '0 20px' }}>
           <div style={{ position: 'relative', marginBottom: '20px' }}>
@@ -103,27 +112,9 @@ function PublicMenu() {
             <input type="text" placeholder="Cerca vino o cantina..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} style={{width:'100%', padding:'12px 45px', borderRadius:'30px', border:'1px solid #eee', background:'#f9f9f9', boxSizing:'border-box', outline:'none'}} />
           </div>
           {!searchTerm && Object.keys(viniGruppati).length > 1 && (
-            <div style={{ 
-                display: 'flex', 
-                flexWrap: 'wrap', // QUESTO FA ANDARE I TASTI A CAPO
-                gap: '8px', 
-                paddingBottom: '15px', 
-                justifyContent: 'center', 
-                borderBottom: '1px solid #f2f2f2' 
-            }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', paddingBottom: '15px', justifyContent: 'center', borderBottom: '1px solid #f2f2f2' }}>
               {Object.keys(viniGruppati).map(cat => (
-                <button 
-                    key={cat} 
-                    onClick={() => setSubTabVino(cat)} 
-                    style={{ 
-                        border: 'none', padding: '8px 16px', borderRadius: '20px', fontSize: '0.75rem', 
-                        background: subTabVino === cat ? '#333' : '#f4f4f4', 
-                        color: subTabVino === cat ? 'white' : '#888', 
-                        fontWeight:'bold', cursor:'pointer' 
-                    }}
-                >
-                    {cat.toUpperCase()}
-                </button>
+                <button key={cat} onClick={() => setSubTabVino(cat)} style={{ border: 'none', padding: '8px 16px', borderRadius: '20px', fontSize: '0.75rem', background: subTabVino === cat ? '#333' : '#f4f4f4', color: subTabVino === cat ? 'white' : '#888', fontWeight:'bold', cursor:'pointer' }}>{cat.toUpperCase()}</button>
               ))}
             </div>
           )}
@@ -131,21 +122,22 @@ function PublicMenu() {
       )}
 
       <main style={{ maxWidth: '550px', margin: '0 auto', padding: '20px' }}>
+        {/* VISTA VINI */}
         {tab === 'vini' && (searchTerm ? viniFiltrati : viniGruppati[subTabVino])?.map(v => {
           const vm = v.wl_vini_master;
           return (
             <div key={v.id} ref={el => viniRefs.current[v.id] = el} style={{ padding: '50px 0', borderBottom: '1px solid #f2f2f2', textAlign: 'center', opacity: v.disponibile ? 1 : 0.6, position:'relative' }}>
-              {!v.disponibile && <div style={{ color: '#992235', fontWeight: 'bold', letterSpacing:'2px', marginBottom: '15px' }}>— MOMENTANEAMENTE ESAURITO —</div>}
+              {!v.disponibile && <div style={{ color: '#992235', fontWeight: 'bold', marginBottom: '15px' }}>— NON DISPONIBILE —</div>}
               {v.winelink_selection && (
-                <div style={{ position:'absolute', top:'20px', right:'0', background: '#D5E0A0', color: pColor, padding: '5px 12px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 'bold', display:'flex', alignItems:'center', gap:'5px', boxShadow:'0 2px 5px rgba(0,0,0,0.1)' }}>
+                <div style={{ position:'absolute', top:'20px', right:'0', background: '#D5E0A0', color: pColor, padding: '5px 12px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 'bold', display:'flex', alignItems:'center', gap:'5px' }}>
                    <Star size={12} fill={pColor} /> WINELINK SELECTION
                 </div>
               )}
-              {vm?.immagine_url && <img src={vm.immagine_url} style={{ maxHeight: '300px', width: 'auto', marginBottom: '25px', filter: v.disponibile ? 'none' : 'grayscale(1) opacity(0.5)' }} alt="vino" />}
+              {vm?.immagine_url && <img src={vm.immagine_url} style={{ maxHeight: '300px', width: 'auto', marginBottom: '25px' }} alt="vino" />}
               <h3 style={{ margin: 0, color: pColor, fontSize: '1.7rem' }}>{vm?.nome_vino}</h3>
               <p style={{ margin: '5px 0', fontSize:'1.1rem', color:'#555' }}>{vm?.cantina}</p>
               <div style={{ marginTop: '12px' }}><span style={{ background: sColor, color: 'white', padding: '5px 18px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', textTransform: 'uppercase' }}>{vm?.wl_regioni?.nome}</span></div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: '20px 0', color: '#111' }}>€ {v.prezzo}</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: '15px 0' }}>€ {v.prezzo}</div>
               <div style={{ textAlign: 'left', fontSize: '0.9rem', color: '#666', fontFamily: 'sans-serif', lineHeight: '1.6', background: '#fafafa', padding: '20px', borderRadius: '10px' }}>
                 {vm?.denominazione && <p style={{margin:'4px 0'}}><Check size={16} color={pColor} style={{verticalAlign:'middle'}}/> <b>Denominazione:</b> {vm.denominazione}</p>}
                 {vm?.uvaggio && <p style={{margin:'4px 0'}}><Check size={16} color={pColor} style={{verticalAlign:'middle'}}/> <b>Uve:</b> {vm.uvaggio}</p>}
@@ -158,6 +150,7 @@ function PublicMenu() {
           );
         })}
 
+        {/* VISTA PIATTI (CON ALLERGENI FISSI) */}
         {tab === 'piatti' && Object.keys(piattiGruppati).map(cat => (
           <div key={cat}>
             <h2 style={{ color: pColor, borderBottom: `2px solid ${pColor}11`, marginTop: '50px', paddingBottom: '10px', fontSize:'1.4rem' }}>{cat.toUpperCase()}</h2>
@@ -167,10 +160,23 @@ function PublicMenu() {
                     <h3 style={{ margin: 0, fontSize: '1.3rem' }}>{p.nome_piatto}</h3>
                     <span style={{ fontWeight: 'bold', color: pColor, fontSize:'1.2rem' }}>€ {p.prezzo}</span>
                 </div>
-                <p style={{ margin: '10px 0', color: '#666', fontFamily: 'sans-serif', fontSize: '1rem' }}>{p.descrizione}</p>
-                {p.vino_consigliato_id && (
-                  <button onClick={() => scrollToWine(p.vino_consigliato_id, p.wl_vini?.wl_categorie_vini?.nome)} style={{ background: 'none', border: `1px solid ${pColor}`, color: pColor, padding: '10px 15px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem', display:'flex', alignItems:'center', gap:'8px', marginTop:'15px' }}>
-                    <Wine size={16} /> CONSIGLIATO: {p.wl_vini?.wl_vini_master?.nome_vino}
+                <p style={{ margin: '10px 0', color: '#666', fontFamily: 'sans-serif', fontSize: '1rem', lineHeight: '1.5' }}>{p.descrizione}</p>
+                
+                {/* SEZIONE ALLERGENI */}
+                {p.allergeni?.length > 0 && (
+                  <div style={{ marginTop: '10px', display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                    <span style={{ fontSize: '0.75rem', color: '#999', fontWeight: 'bold', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Info size={12} /> Allergeni:
+                    </span>
+                    {p.allergeni.map(a => (
+                      <span key={a} style={{ fontSize: '0.75rem', color: '#888', background: '#f4f4f4', padding: '2px 8px', borderRadius: '10px' }}>{a}</span>
+                    ))}
+                  </div>
+                )}
+
+                {p.vino_consigliato_id && p.wl_vini && (
+                  <button onClick={() => scrollToWine(p.vino_consigliato_id, p.wl_vini.wl_categorie_vini?.nome)} style={{ background: 'none', border: `1px solid ${pColor}`, color: pColor, padding: '10px 18px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem', display:'flex', alignItems:'center', gap:'8px', marginTop:'15px' }}>
+                    <Wine size={16} /> CONSIGLIATO: {p.wl_vini.wl_vini_master?.nome_vino}
                   </button>
                 )}
               </div>
@@ -179,6 +185,7 @@ function PublicMenu() {
         ))}
       </main>
 
+      {/* FOOTER */}
       <footer style={{ marginTop: '100px', padding: '60px 20px', background: '#fcfcfc', borderTop: '1px solid #eee', textAlign: 'center' }}>
         <img src="https://www.winelink.info/wp-content/uploads/2026/02/logo-orizzontale_wine_link.png" style={{ maxHeight: '50px', marginBottom: '20px' }} alt="winelink" />
         <p style={{ margin: '0', fontSize: '0.95rem', color:'#444' }}>Un progetto <b>SuPeR horeca edition</b></p>
@@ -191,10 +198,4 @@ function PublicMenu() {
     </div>
   );
 }
-
-function WineCard({ v, pColor, sColor }) {
-    // Nota: Questa funzione non è più usata direttamente nel map sopra per evitare confusione con le refs
-    return null; 
-}
-
 export default PublicMenu;
